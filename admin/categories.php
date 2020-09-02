@@ -1,0 +1,117 @@
+<?php 
+require_once 'core/init.php';
+if ($user) {
+	if (isset($_POST['action'])) {
+		$action = trim(addslashes(htmlspecialchars($_POST['action'])));
+		if ($action == 'load_add_cate') {
+			$type_cate = trim(addslashes(htmlspecialchars($_POST['type_cate'])));
+			if (!preg_match('/\D/', $type_cate)) {
+				$type_parent =intval($type_cate) - 1;
+				$sql_add = "SELECT * FROM categories WHERE type = '$type_parent'";
+				if ($db->numrow($sql_add)>0) {
+					foreach ($db->getData($sql_add) as $key => $value) {
+						echo '<option value="' . $value['id_cate'] . '">' . $value['label'] . '</option>';
+					}
+				}else{
+					 echo '<option value="0">Hiện chưa có chuyên mục cha nào</option>';
+				}
+			}
+		}
+		else if($action == 'load_edit_cate') {
+			$type_cate = trim(addslashes(htmlspecialchars($_POST['type_cate'])));
+			if (!preg_match('/\D/', $type_cate)) {
+				$type_parent =intval($type_cate) - 1;
+				$sql_add = "SELECT * FROM categories WHERE type = '$type_parent'";
+				if ($db->numrow($sql_add)>0) {
+					foreach ($db->getData($sql_add) as $key => $value) {
+						echo '<option value="' . $value['id_cate'] . '">' . $value['label'] . '</option>';
+					}
+				}else{
+					 echo '<option value="0">Hiện chưa có chuyên mục cha nào</option>';
+				}
+			}
+		}else if ($action == 'delete_type_list') {
+			$id_cate=trim(addslashes(htmlspecialchars($_POST['id_cate'])));
+			foreach ($_POST['id_cate'] as $key => $value) {
+				$sql_delete = "SELECT * FROM categories WHERE id_cate='$value'";
+				if ($db->numrow($sql_delete)) {
+					$db->statement("DELETE FROM categories WHERE id_cate='$value'");
+				}
+			}
+		} else if ($action == 'del-this') {
+			$id_cate=trim(addslashes(htmlspecialchars($_POST['id_del'])));
+			$sql_check_id_cate_exist = "SELECT id_cate FROM categories WHERE id_cate = '$id_cate'";
+		    if ($db->numrow($sql_check_id_cate_exist))
+		    {
+		        $sql_delete_cate = "DELETE FROM categories WHERE id_cate = '$id_cate'";
+		        $db->statement($sql_delete_cate);
+		    }       
+		}
+		else if ($action == 'add_type') {
+			$lable = trim(addslashes(htmlspecialchars($_POST['lable'])));
+            $url= trim(addslashes(htmlspecialchars($_POST['url'])));
+            $type = trim(addslashes(htmlspecialchars($_POST['type'])));
+            $parent = trim(addslashes(htmlspecialchars($_POST['parent'])));
+            $sort = trim(addslashes(htmlspecialchars($_POST['sort'])));
+            $show_alert = '<script>$("#formAddCate .alert").removeClass("hidden");</script>';
+            $hide_alert = '<script>$("#formAddCate .alert").addClass("hidden");</script>';
+            $success = '<script>$("#formAddCate .alert").attr("class", "alert alert-success");</script>';
+            if ($lable == '' || $url == '' || $type == '' || $sort == '')
+            {
+                echo $show_alert.'Vui lòng điền đầy đủ thông tin';
+            }else{
+            	if (preg_match('/\D/', $type)) {
+            		echo $show_alert.'Đã có lỗi xảy ra, hãy thử lại sau.';
+            	}else if (preg_match('/\D/', $sort) || $sort < 1) {
+            		echo $show_alert.'Sort chuyên mục phải là một số nguyên dương.';
+            	}
+            	 else if (preg_match('/\D/', $parent))
+                {
+                    echo $show_alert.'Đã có lỗi xảy ra, hãy thử lại sau.1';
+                }
+                else{
+                	$sql_add_type = "INSERT into categories VALUES ('','$lable','$url','$type',$sort,'$parent','$date_current')";
+                	$db->statement($sql_add_type);
+                	echo $success.'Tạo chuyên mục thành công.';
+                	new redirect($_DOMAIN.'categories');
+                }
+            }
+		}else if ($action == 'edit_type') {
+			$lable = trim(addslashes(htmlspecialchars($_POST['lable'])));
+            $url= trim(addslashes(htmlspecialchars($_POST['url'])));
+            $type = trim(addslashes(htmlspecialchars($_POST['type'])));
+            $parent = trim(addslashes(htmlspecialchars($_POST['parent'])));
+            $sort = trim(addslashes(htmlspecialchars($_POST['sort'])));
+            $id_edit = trim(addslashes(htmlspecialchars($_POST['id_edit'])));
+            $show_alert = '<script>$("#formAddCate .alert").removeClass("hidden");</script>';
+            $hide_alert = '<script>$("#formAddCate .alert").addClass("hidden");</script>';
+            $success = '<script>$("#formAddCate .alert").attr("class", "alert alert-success");</script>';
+            if ($lable == '' || $url == '' || $type == '' || $sort == '')
+            {
+                echo $show_alert.'Vui lòng điền đầy đủ thông tin';
+            }else{
+            	if (preg_match('/\D/', $type)) {
+            		echo $show_alert.'Đã có lỗi xảy ra, hãy thử lại sau.';
+            	}else if (preg_match('/\D/', $sort) || $sort < 1) {
+            		echo $show_alert.'Sort chuyên mục phải là một số nguyên dương.';
+            	}
+            	 else if (preg_match('/\D/', $parent))
+                {
+                    echo $show_alert.'Đã có lỗi xảy ra, hãy thử lại sau.1';
+                }
+                else{
+                	$sql_add_type = "UPDATE categories SET label='$lable',url='$url',type='$type',sort='$sort',parent_id='$parent' WHERE id_cate='$id_edit'";
+                	$db->statement($sql_add_type);
+                	echo $success.'Chỉnh sửa chuyên mục thành công.';
+                	new redirect($_DOMAIN.'categories');
+                }
+            }
+		}
+	}else{
+		new redirect($_DOMAIN);
+	}
+}else{
+	new redirect($_DOMAIN);
+}
+
+ ?>

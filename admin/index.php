@@ -1,0 +1,12 @@
+<?php 
+date_default_timezone_set('Asia/Ho_Chi_Minh');
+require_once 'core/init.php';
+require_once 'includes/header.php';
+ if (!$user) {
+	require_once 'templates/signin.php';
+}else{
+	require_once 'templates/sidebar.php';
+	require_once 'templates/content.php';
+}
+require_once 'includes/footer.php';
+ ?>

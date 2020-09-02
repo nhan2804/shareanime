@@ -1,0 +1,348 @@
+<?php
+ 
+ if ($user) {
+ 	echo '<h3>Bài viết</h3>';
+ 	if (isset($_GET['ac'])) {
+ 		$ac = trim(addslashes(htmlspecialchars($_GET['ac'])));
+ 	}else {
+ 		$ac = '';
+ 	}
+ 	if (isset($_GET['id'])) {
+ 		$id = trim(addslashes(htmlspecialchars($_GET['id'])));
+ 	}else{
+ 		$id = '';
+ 	}
+ 	if ($ac!='') {
+		if ($ac=='add') {
+			echo '
+			<a href="'.$_DOMAIN.'posts" class="btn btn-default">
+				<i class="glyphicon glyphicon-arrow-left"></i>Trở về
+			</a>
+			';
+			echo '
+			<form method="POST" id="formaddpost" onsubmit="return false;">
+				<div class="form-group">
+					<label>Tiêu đề bài viết</label>
+					<input type="text" class="form-control title" name="" id="title_post">
+				</div>
+				<div class="form-group">
+					<label>Url chuyên mục</label>
+					<input type="text" class="form-control slug" name="" id="url_post" placeholder="Nhấp để tạo tự động">
+				</div>
+				<div class="form-group">
+                	<button type="submit" class="btn btn-primary">Tạo</button>
+            	</div>
+            	<div class="alert alert-info hidden">Vui lòng điền đầy đủ thông tin</div>
+			</form>
+			';
+		}else if ($ac == 'edit') {
+			$sql_check = "SELECT id_post, author_id FROM posts WHERE id_post = '$id'";
+			if ($db->numrow($sql_check)) {
+				$data_post = $db->getRow($sql_check);
+				if ($data_post['author_id'] == $datauser['id_acc'] || $datauser['position'] == '0') {
+					echo
+                    '
+                        <a href="' . $_DOMAIN . 'posts" class="btn btn-default">
+                            <span class="glyphicon glyphicon-arrow-left"></span> Trở về
+                        </a>
+                        <a class="btn btn-danger" id="del_post" data-id="' . $id . '">
+                            <span class="glyphicon glyphicon-trash"></span> Xoá
+                        </a> 
+                    ';
+                    $sql_get_data_post = "SELECT * FROM posts WHERE id_post = '$id'";
+                    if ($db->numrow($sql_get_data_post)) {
+                      	$data_edit = $db->getRow($sql_get_data_post);
+                      	echo '
+                      	<br>
+                      	<br>
+			        	<form method="POST" onsubmit="return false;" id="formeditpost" data-id="'.$id.'">
+			        	<div class="form-group">
+			        		<label>Trạng thái bài viết</label>'
+			        		;
+			        	if ($data_edit['status']== '0') {
+			        		echo '
+							<div class="radio">
+								<label>
+									<input type="radio" value="0" name="stt_edit_post" checked >Ẩn
+								</label>
+							</div>
+							<div class="radio">
+								<label>
+									<input type="radio" value="1" name="stt_edit_post" >Hiện
+								</label>
+							</div>
+							';
+			        	}else{
+			        		echo '
+							<div class="radio">
+								<label>
+									<input type="radio" value="0" name="stt_edit_post" >Ẩn
+								</label>
+							</div>
+							<div class="radio">
+								<label>
+									<input type="radio" value="1" name="stt_edit_post" checked >Hiện
+								</label>
+							</div>
+							';
+			        	}
+			        	echo '</div>
+			        	<div class="form-group">
+			        		<label>Tiêu đề bài viết</label>
+			        		<input class="form-control title" id="title_edit" type="text" value="'.$data_edit['title'].'" name="">
+			        	</div>
+			        	<div class="form-group">
+			        		<label>Slug bài viết</label>
+			        		<input type="text" id="slug_edit" class="form-control slug" value="'.$data_edit['slug'].'" name="">
+			        	</div>
+			        	<div class="form-group">
+			        		<label>Url Hình ảnh</label>
+			        		<input type="text" id="url_edit" class="form-control " value="'.$data_edit['url_thumb'].'" name="">
+			        	</div>
+			        	<div class="form-group">
+			        		<label>Mô tả bài viết</label>
+			        		<textarea id="desc_edit" class="form-control">'.$data_edit['descr'].'</textarea>
+			        	</div>
+			        	<div class="form-group">
+			        		<label>Từ khóa bài viết</label>
+			        		<input class="form-control" id="kw_edit" type="text" value="'.$data_edit['keywords'].'" name="">
+			        	</div>
+			        	<div class="form-group">
+			        		<label>Chuyên mục lớn</label>
+			        		<select class="form-control" id="cate_edit-1">
+			        	';
+			        	$sql_get_cate_post_1 = "SELECT label, id_cate FROM categories WHERE type = '1'";
+			        	echo $sql_get_cate_post_1;
+			        	if ($db->numrow($sql_get_cate_post_1)) {
+			        		if ($data_edit['cate_1_id']==0) {
+			        			echo '<option value="">Vui lòng chọn chuyên mục</option>';
+			        		}
+			        		foreach ($db->getData($sql_get_cate_post_1) as $key => $value) {
+			        			if ($value['id_cate']==$data_edit['cate_1_id']) {
+			        				echo $value['cate_1_id']."và".$data_edit['cate_1_id'];
+			        				echo '<option value="'.$value['id_cate'].'" selected>'.$value['label'].'</option>';
+			        			}else{
+			        				echo '<option value="'.$value['id_cate'].'" >'.$value['label'].'</option>';
+			        			}
+			        		}
+			        	}else{
+			        		echo '<option value="">Chưa có chuyên mục lớn nào!</option>';
+			        	}
+			        	echo '</select>
+			        	</div>
+			        		<div class="form-group">
+			        			<label>Chuyên mục vừa</label>
+			        		<select class="form-control" id="cate_edit-2">';
+			        	$sql_get_cate_post_2 = "SELECT label, id_cate FROM categories WHERE type = '2'";
+			        	if ($db->numrow($sql_get_cate_post_2)) {
+			        		if ($data_edit['cate_2_id']==0) {
+			        			echo '<option value="">Vui lòng chọn chuyên mục</option>';
+			        		}
+			        		foreach ($db->getData($sql_get_cate_post_2) as $key => $value) {
+			        			if ($value['id_cate']==$data_edit['cate_2_id']) {
+			        				echo '<option value="'.$value['id_cate'].'" selected>'.$value['label'].'</option>';
+			        			}else{
+			        				echo '<option value="'.$value['id_cate'].'" >'.$value['label'].'</option>';
+			        			}
+			        		}
+			        	}else{
+			        		echo '<option value="">Chưa có chuyên mục vừa nào!</option>';
+			        	}
+			        	echo '</select>
+			        	</div>
+			        		<div class="form-group">
+			        			<label>Chuyên mục con</label>
+			        		<select class="form-control" id="cate_edit-3">';
+			        	$sql_get_cate_post_3 = "SELECT label, id_cate FROM categories WHERE type = '3'";
+			        	if ($db->numrow($sql_get_cate_post_3)) {
+			        		if ($data_edit['cate_3_id']==0) {
+			        			echo '<option value="">Vui lòng chọn chuyên mục</option>';
+			        		}
+			        		foreach ($db->getData($sql_get_cate_post_3) as $key => $value) {
+			        			if ($value['id_cate']==$data_edit['cate_3_id']) {
+			        				echo '<option value="'.$value['id_cate'].'" selected>'.$value['label'].'</option>';
+			        			}else{
+			        				echo '<option value="'.$value['id_cate'].'" >'.$value['label'].'</option>';
+			        			}
+			        		}
+			        	}else{
+			        		echo '<option value="">Chưa có chuyên mục con nào!</option>';
+			        	}
+			        	echo '</select>
+			        	</div>';
+			        	echo '
+			        		<div class="form-group">
+			        			<label>Nội dung bài viết</label>
+			        			<textarea id="body_edit_post" class="form-control" >'.$data_edit['body'].'</textarea>
+			        		</div>
+			        		<div class="form-group">
+			        			<button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+			        		</div>
+			        		<div class="alert alert-danger hidden"></div>
+			        		</form>
+			        		';
+                      }  
+				}else{
+					echo '<div class="alert alert-danger">Bài viết không thuộc quyền sở hữu của bạn.</div>';
+				}
+
+			}else{
+				echo '<div class="alert alert-danger">Bài viết không tồn tại !</div>';
+			}
+		}
+ 		}else{
+			echo '
+			<a href="' . $_DOMAIN . 'posts/add" class="btn btn-success">
+                <span class="glyphicon glyphicon-plus"></span> Thêm
+            </a> 
+            <a href="' . $_DOMAIN . 'posts" class="btn btn-default">
+                <span class="glyphicon glyphicon-repeat"></span> Reload
+            </a> 
+            <a class="btn btn-danger" id="del_post_list">
+                <span class="glyphicon glyphicon-trash"></span> Xoá
+            </a> 
+            <br>
+            ';
+            if ($datauser['position']==0) {
+            	$sql_get_list_post= "SELECT * FROM posts ORDER BY id_post DESC";
+            }else{
+            	$sql_get_list_post= " SELECT * FROM posts WHERE author_id='$datauser[id_acc]' ORDER BY id_post DESC";
+            }
+            if ($db->numrow($sql_get_list_post)) {
+            	if (isset($_GET['page'])) {
+            		$pagenow = trim(addslashes(htmlspecialchars($_GET['page'])));
+            	}else{
+            		$pagenow = '';
+            	}
+            	$limit = 10;
+            	$pagenow=intval($pagenow);
+            	$total_page = ceil($db->numrow($sql_get_list_post) / $limit);
+            	$start =intval(( $pagenow- 1 ) * $limit);
+            	if ($pagenow>$total_page) {
+            		new redirect($_DOMAIN.'posts&page='.$total_page);
+            	}else if ($pagenow<1) {
+            		new redirect($_DOMAIN.'posts&page=1');
+            	}
+            	echo '
+            	<br>
+            	<form method="POST" id="formsearchpost" onsubmit="return false;">
+            		<div class="input-group">
+            			<input class="form-control" id="text_search" type="text" name="" placeholder="Nhập id,tên bài viết...." />
+            		<span class="input-group-btn">
+            			<button type="submit" id="btn-search" value="some wrong" class="btn btn-primary">
+            				<i class="glyphicon glyphicon-search"></i>
+            			</button>
+            		</span>
+            		</div>
+            	</form>
+            	';
+            	echo '
+            	<div class="table-responsive" id="list_post">
+            		<table class="table table-striped list">
+            			<tr>
+		            		<td><input type="checkbox"></td>
+		                    <td><strong>ID</strong></td>
+		                    <td><strong>Tiêu đề</strong></td>
+		                    <td><strong>Trạng thái</strong></td>
+		                    <td><strong>Chuyên mục</strong></td>
+		                    <td><strong>Lượt xem</strong></td>
+            		
+            	';
+            	if ($datauser['position']==0) {
+            		echo "<td><strong>Tác giả</strong></td>";
+            	}
+            	echo "
+            		<td><strong>Tools</strong></td>
+            	</tr>";
+            	if ($datauser['position']==0) {
+            		$sql_get_list_post_limit= "SELECT * FROM posts ORDER BY id_post DESC limit $start,$limit";
+            	}else{
+            		$sql_get_list_post_limit= " SELECT * FROM posts WHERE author_id='$datauser[id_acc]' ORDER BY id_post DESC limit $start,$limit";
+            	}
+            	foreach ($db->getData($sql_get_list_post_limit) as $key => $value) {
+            		if ($value['status']==0) {
+            			$status_post = '<label class="label label-warning">Ẩn</label>';
+            		}else{
+            			$status_post = '<label class="label label-warning">Cho phép</label>';
+            		}
+            		$cate_post='';
+            		$sql_check1= "SELECT label,id_cate FROM categories WHERE id_cate='$value[cate_1_id]' and type='1'";
+            		if ($db->numrow($sql_check1)) {
+            			$data_tmp1 =$db->getRow($sql_check1);
+            			$cate_post.=$data_tmp1['label'];
+            		}else{
+            			$cate_post.='<span class="text-danger">Lỗi<span>';
+            		}
+            		$sql_check2= "SELECT label,id_cate FROM categories WHERE id_cate='$value[cate_2_id]' and type='2'";
+            		if ($db->numrow($sql_check2)) {
+            			$data_tmp2 =$db->getRow($sql_check2);
+            			$cate_post.=', '.$data_tmp2['label'];
+            		}else{
+            			$cate_post.='<span class="text-danger">Lỗi<span>';
+            		}
+            		$sql_check3= "SELECT label,id_cate FROM categories WHERE id_cate='$value[cate_3_id]' and type='3'";
+            		if ($db->numrow($sql_check3)) {
+            			$data_tmp3 =$db->getRow($sql_check3);
+            			$cate_post.=', '.$data_tmp3['label'];
+            		}else{
+            			$cate_post.='<span class="text-danger">Lỗi<span>';
+            		}
+            		$sql_get_author= "SELECT display_name from accounts WHERE id_acc='$value[author_id]'";
+            		if ($db->numrow($sql_get_author)) {
+            			$data_tmp4= $db->getRow($sql_get_author);
+            			$name_author=$data_tmp4['display_name'];
+            		}else{
+            			$name_author='<span class="text-danger">Lỗi</span>';
+            		}
+            		echo '
+            		<tr>
+            			<td><input type="checkbox" name="id_post[]" value="'.$value['id_post'] .'"></td>
+            			<td>'.$value['id_post'].'</td>
+            			<td style="width: 30%;"><a href="'.$_DOMAIN.'posts/edit/'.$value['id_post'].'">'.$value['title'].'</a></td>
+            			<td>'.$status_post.'</td>
+            			<td>'.$cate_post.'</td>
+            			<td>'.$value['view'].'</td>
+            		';
+            		if ($datauser['position']==0) {
+            			echo '<td>'.$name_author.'</td>';
+            		}
+            		echo '
+			                <td>
+			                    <a href="' . $_DOMAIN . 'posts/edit/' . $value['id_post'] .'" class="btn btn-primary btn-sm">
+			                        <span class="glyphicon glyphicon-edit"></span>
+			                    </a>
+			                    <a class="btn btn-danger btn-sm del-post-id" data-id="' . $value['id_post'] . '">
+			                        <span class="glyphicon glyphicon-trash"></span>
+			                    </a>
+			                </td>
+			            </tr>
+			        ';
+            	}
+            	echo
+			    '
+			            </table>
+			    ';
+			    echo '<div class="btn-group" id="bnt-page">';
+			    if ($pagenow>1 && $total_page>1) {
+			    	echo '<a class="btn btn-default" href="'.$_DOMAIN.'posts&page='.($pagenow-1).'"><span class="glyphicon glyphicon-chevron-left"></span>Prev</a>';
+			    }
+			    for ($i=1; $i <=$total_page ; $i++) { 
+			    	if ($i==$pagenow) {
+			    		echo '<a class="btn btn-default active">' . $i . '</a>';
+			    	}else{
+			    		echo '<a class="btn btn-default" href="'.$_DOMAIN.'posts&page='.$i.'">' . $i . '</a>';
+			    	}
+			    }
+			    if ($pagenow<$total_page && $total_page>1) {
+			    	echo '<a class="btn btn-default" href="'.$_DOMAIN.'posts&page='.($pagenow+1).'">Next<span class="glyphicon glyphicon-chevron-right"></span></a>';
+			    }
+			    echo "<br> <br>";
+			    echo "</div>";
+            }else{
+            	 echo '<br><br><div class="alert alert-info">Chưa có bài viết nào.</div>';
+            }
+		}
+ }else{
+ 	new redirect($_DOMAIN);
+ }
+ ?>

@@ -1,0 +1,72 @@
+<?php
+$sql_get_lightnovel = "SELECT * FROM lightnovel";
+foreach ($db->getData($sql_get_lightnovel) as $key => $value) {
+	$sql_get_chapter1 = "SELECT SUM(view) as total_view from chapter WHERE id_lightnovel = '$value[id_lightnovel]'";
+	$data_view        = $db->getRow($sql_get_chapter1);
+	$total_view       = $data_view['total_view'];
+	$sql_update_view  = "UPDATE lightnovel SET view='$total_view' WHERE id_lightnovel= '$value[id_lightnovel]'";
+	$db->statement($sql_update_view);
+}
+?>
+<div class="col lg-3 md-12 sm-12 ">
+
+	<h2 class="heading_popular" style="background: #ff4d00">Lượt xem nhiều nhất <i class="fas fa-eye"></i></h2>
+	<div class="popular">
+	<div class="tab_button">
+		<button id="opened" class="opentab" style="flex: 1;" onclick="opentab(event,'lightnovel');">Light Novel</button>
+		<button class="opentab" style="flex: 1;" onclick="opentab(event,'news');">Tin tức Anime</button>
+	</div>
+	<ul class="list_popular" id="news">
+<?php
+if (isset($_GET['sc']) || isset($_GET['n'])) {
+	$url_img = '../';
+} else if (isset($_GET['ct'])) {
+	$url_img = '../../';
+} else {
+	$url_img = '';
+}
+$sql = "SELECT * FROM posts WHERE status = '1' ORDER BY view DESC LIMIT 0, 10";
+if ($db->numrow($sql)) {
+	foreach ($db->getData($sql) as $key => $value) {
+		echo '<li class="desrc_popular_new" title="'.$value['title'].'">
+		 				<img class="img_popular_new" src="'.$url_img.$value['url_thumb'].'"/>
+				 		<a class="link_popular_new" href="'.$_DOMAIN.$value['slug'].'-'.$value['id_post'].'.html">'.$value['title'].'</a></li>';
+	}
+}
+?>
+</ul>
+		<ul class="list_popular" id="lightnovel">
+<?php
+if (isset($_GET['sc']) || isset($_GET['n'])) {
+	$url_img = '../';
+} else if (isset($_GET['ct'])) {
+	$url_img = '../../';
+} else {
+	$url_img = '';
+}
+$sql = "SELECT * FROM lightnovel ORDER BY view DESC LIMIT 0, 10";
+if ($db->numrow($sql)) {
+	foreach ($db->getData($sql) as $key => $value) {
+		$sql_get_new_chapter = "SELECT  Num_Chapter,Name_Chapter from chapter WHERE Id_lightnovel='$value[id_lightnovel]' ORDER BY  Num_Chapter DESC";
+		$data_new_chap       = $db->getRow($sql_get_new_chapter);
+		$new_chap            = $data_new_chap['Name_Chapter'];
+		echo '<li class="desrc_popular" title="'.$value['descr_lightnovel'].'">
+		 				<img class="img_popular" src="'.$url_img.$value['img_lightnovel'].'"/>
+		 				<div class="time_update">
+				 		<a  class="link_popular" href="'.$_DOMAIN.'lightnovel/'.$value['url_lightnovel'].'-'.$value['id_lightnovel'].'/1.html">'.$value['name_lightnovel'].'</a>
+				 		<h4 class="new_chap">'.$new_chap.'</h4>
+						</div>
+						</li>
+				 		';
+	}
+}
+?>
+	</ul>
+	</div>
+	<br>
+	<h2 class="heading_popular">Like Page chúng tôi</h2>
+	<div class="hide-on-table-and-moblie">
+		<div style="width: 100%" class="fb-page" data-href="https://www.facebook.com/IshtarFanArt/" data-tabs="timeline" data-width="" data-height="" data-small-header="true" data-adapt-container-width="true" data-hide-cover="false" data-show-facepile="true"><blockquote cite="https://www.facebook.com/IshtarFanArt/" class="fb-xfbml-parse-ignore"><a href="https://www.facebook.com/IshtarFanArt/">Ishtar</a></blockquote></div>
+	</div>
+
+</div>

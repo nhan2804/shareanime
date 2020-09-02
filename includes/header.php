@@ -1,0 +1,265 @@
+<?php
+$title_error_404='Không tìm thấy trang yêu cầu!';
+if (isset($_GET['sp']) && isset($_GET['id']) && isset($_GET['ct'])) {
+		$sp = trim(htmlspecialchars(addslashes($_GET['sp'])));
+		$id = trim(htmlspecialchars(addslashes($_GET['id'])));
+		$ct = trim(htmlspecialchars(addslashes($_GET['ct'])));
+		$sql_get_lightnovel = "SELECT * FROM lightnovel WHERE id_lightnovel = '$id'";
+		$data_lightnovel = $db->getRow($sql_get_lightnovel);
+		$name_ln =$data_lightnovel['name_lightnovel'];
+		$sql_get_chapter = "SELECT * from chapter WHERE id_lightnovel=$id";
+		$data_chapter = $db->getRow($sql_get_chapter);
+		$name_chapter= $data_chapter['Name_Chapter'];
+		$title = $name_ln.'-'.$name_chapter;
+}
+else if(isset($_GET['sp']) && isset($_GET['id'])) {
+	$slug= trim(addslashes(htmlspecialchars($_GET['sp'])));
+	$id= trim(addslashes(htmlspecialchars($_GET['id'])));
+	$sql_check_slug_id= "SELECT * from posts where slug='$slug' and id_post='$id'";
+	if ($db->numrow($sql_check_slug_id)) {
+		$data_slug_id = $db->getRow($sql_check_slug_id);
+		$title= $data_slug_id['title'];
+	}else{
+		$title= $title_error_404;
+	}
+}else if (isset($_GET['sc']) ) {
+	$slug_cate = trim(htmlspecialchars($_GET['sc']));
+	$sql_check_slug= "SELECT * from categories where url='$slug_cate'";
+	if ($db->numrow($sql_check_slug)) {
+		$data_slug = $db->getRow($sql_check_slug);
+		$title= $data_slug['label'];
+	}else{
+        $title = $title_error_404;
+	}
+}else{
+	$title=$title_web;
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title><?php echo $title; ?></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css"/>
+    <link rel="stylesheet" type="text/css" href="<?php echo $_DOMAIN; ?>js/style.css">
+    <link rel="stylesheet" href="<?php echo $_DOMAIN; ?>js/layout.css">
+    <link rel="stylesheet" href="<?php echo $_DOMAIN; ?>js/responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+<div class="modal_popup hidden">
+        <div class="layer"></div>
+        <div class="popup_login">
+            <div class="header_btn">
+                <button style="outline: none;" onclick="opentab2(event,'signup')" class="opentab header_login btn_signup">Đăng Ký</button>
+                <button style="outline: none;" id="opened2"  onclick="opentab2(event,'signin')" class="opentab header_login btn_signin">Đăng Nhập</button>
+            </div>
+            <div class="form_login">
+                <div id="signin" class="input_login">
+                    <form id="formSignin" onclick="return false" action="" method="POST">
+                        <div class="div_input">
+                            <div class="icon_login" style="">
+                               <i class="fas fa-user"></i> 
+                            </div>
+                            <div class="div_title">
+                                <h5>Username</h5>
+                                <input class="input_item" id="user_signin" type="text" name="user" autocomplete="off">
+                            </div>
+                        </div>
+                        <div class="div_input">
+                            <div class="icon_login" style="display: flex;align-items: center;">
+                               <i class="fas fa-lock"></i> 
+                            </div>
+                            <div class="div_title">
+                                <h5>Password</h5>
+                                <input class="input_item" id="pass_signin" type="password" autocomplete="off" name="password">
+                            </div>
+                        </div>
+                        <br>
+                        <input id="btn_signin" class="input_item btn_reg" type="submit" value="Đăng Nhập" name="">
+                        <div class="alert-danger alert">admin|nhan2804</div>
+                    </form>
+                        <p style="text-align: center;">Hoặc sử dụng tài khoản khác</p>
+                        <div class="icon_social">
+                            <i class="fab fa-facebook-square icon icon_hover"></i>
+                            <i class="fab fa-github-square icon icon_hover"></i>
+                            <i class="fab fa-twitter-square icon icon_hover"></i>
+                        </div>
+                </div>
+                <div style="animation: showru 0.4s;" id="signup" class="input_login">
+                    <form action="" method="POST">
+                   
+                        <input class="input_item" type="text" placeholder="Họ và Tên" name="displayname">
+                        <br>
+                        <input class="input_item" type="text" placeholder="Tên đăng nhập" name="user">
+                        <br>
+                        <input class="input_item" type="text" placeholder="Email" name="email">
+                        <br>
+                        <input class="input_item" type="text" placeholder="Mật khẩu" name="password">
+                        <br>
+                        <div class="agree_us">
+                            <input type="checkbox" name=""> Đồng ý với <a href="#">điều khoản</a> của chúng tôi
+                        </div>
+                        <br>
+                        <input class="input_item btn_reg" type="submit" value="Đăng Kí" name="">
+                        <br>
+                        <p style="text-align: center;">&copy; 2020 Codehero<p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+<div class="layer hidden"></div>
+<div class="sidebar">
+	<ul class="menu1_bar">
+				<?php
+				$sql_get_list_menu_1 = "SELECT * FROM categories WHERE type = '1' and sort!='100' ORDER BY sort ASC";
+				if ($db->numrow($sql_get_list_menu_1)) {
+				 	foreach ($db->getData($sql_get_list_menu_1) as $key => $value1) {
+				 		$sql_get_list_menu_2 = "SELECT * FROM categories WHERE type = '2' AND parent_id = '$value1[id_cate]' ORDER BY sort ASC";
+				 		if ($db->numrow($sql_get_list_menu_2)) {
+				 			$sub_menu2 = '<ul class="">';
+				 			foreach ($db->getData($sql_get_list_menu_2) as $key => $value2) {
+				 				$sql_get_list_menu_3 = "SELECT * FROM categories WHERE type = '3' AND parent_id = '$value2[id_cate]' ORDER BY sort ASC";
+				 				if ($db->numrow($sql_get_list_menu_3)) {
+				 					$sub_menu3 = '<ul class="">';
+				 					foreach ($db->getData($sql_get_list_menu_3) as $key => $value3) {
+				 						$sub_menu3 .= '<li class=""><a class="link_color" href="'.$_DOMAIN.'categories/'.$value3['url'].'">'.$value3['label'].'</a></li>' ;
+				 					}
+				 					$sub_menu3.='</ul>';
+				 					$sub_menu2 .= '<li class=""><a class="link_color" href="'.$_DOMAIN.'categories/'.$value2['url'].'">'.$value2['label'].'<span class="right-span fas fa-angle-right"></span>'.$sub_menu3.'</a></li>' ;
+				 				}else{
+				 					$sub_menu3='';
+				 					$sub_menu2 .= '<li class=""><a class="link_color" href="'.$_DOMAIN.'categories/'.$value2['url'].'">'.$value2['label'].''.$sub_menu3.'</a></li>' ;
+				 				}
+				 			}
+				 			$sub_menu2 .='</ul>';
+				 			echo '
+								<li class=""><a class="link_color" href="'.$_DOMAIN.'categories/'.$value1['url'].'">'.$value1['label'].'<span class="space-icon fas fa-angle-down"></span>'.$sub_menu2.'</a></li>
+				 			';
+				 		}else{
+				 			$sub_menu2 ='';
+				 			echo '
+								<li class=""><a class="link_color" href="'.$_DOMAIN.'categories/'.$value1['url'].'">'.$value1['label'].' '.$sub_menu2.'</a></li>
+				 			';
+				 		}
+				 	}
+				 	echo '<li class=""><a class="link_color" href="'.$_DOMAIN.'news/1">TIN TỨC</a></li>';
+				 	echo '<li class=""><a class="link_color" href="'.$_DOMAIN.'intro/us" class="">GIỚI THIỆU</a></li>';
+				 }
+				?>
+		</ul>
+</div>
+<div id="fb-root"></div>
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/vi_VN/sdk.js#xfbml=1&version=v6.0"></script>
+<a href="javascript:void(0)"><div class="page"><i class="fas fa-angle-double-up"></i></i></div></a>
+<div class="web">
+	<div class="header">
+		<div class="gird wide">
+			<div class="menu_cate center-table-and-moblie">
+			<a href="<?php echo $_DOMAIN ?>"><h3 style="font-size: 1.4rem;">ShareAnime</h3></a>
+			<ul class="menu1">
+				<?php
+				$sql_get_list_menu_1 = "SELECT * FROM categories WHERE type = '1' and sort!='100' ORDER BY sort ASC";
+				if ($db->numrow($sql_get_list_menu_1)) {
+				 	foreach ($db->getData($sql_get_list_menu_1) as $key => $value1) {
+				 		$sql_get_list_menu_2 = "SELECT * FROM categories WHERE type = '2' AND parent_id = '$value1[id_cate]' ORDER BY sort ASC";
+				 		if ($db->numrow($sql_get_list_menu_2)) {
+				 			$sub_menu2 = '<ul class="menu2">';
+				 			foreach ($db->getData($sql_get_list_menu_2) as $key => $value2) {
+				 				$sql_get_list_menu_3 = "SELECT * FROM categories WHERE type = '3' AND parent_id = '$value2[id_cate]' ORDER BY sort ASC";
+				 				if ($db->numrow($sql_get_list_menu_3)) {
+				 					$sub_menu3 = '<ul class="menu3">';
+				 					foreach ($db->getData($sql_get_list_menu_3) as $key => $value3) {
+				 						$sub_menu3 .= '<li class="cate_list_sub"><a class="cate_link_sub" href="'.$_DOMAIN.'categories/'.$value3['url'].'">'.$value3['label'].'</a></li>' ;
+				 					}
+				 					$sub_menu3.='</ul>';
+				 					$sub_menu2 .= '<li class="cate_list_sub"><a class="cate_link_sub" href="'.$_DOMAIN.'categories/'.$value2['url'].'">'.$value2['label'].'<span class="right-span fas fa-angle-right"></span>'.$sub_menu3.'</a></li>' ;
+				 				}else{
+				 					$sub_menu3='';
+				 					$sub_menu2 .= '<li class="cate_list_sub"><a class="cate_link_sub" href="'.$_DOMAIN.'categories/'.$value2['url'].'">'.$value2['label'].''.$sub_menu3.'</a></li>' ;
+				 				}
+				 			}
+				 			$sub_menu2 .='</ul>';
+				 			echo '
+								<li class="cate_list"><a class="cate_link" href="'.$_DOMAIN.'categories/'.$value1['url'].'">'.$value1['label'].'<span class="space-icon fas fa-angle-down"></span>'.$sub_menu2.'</a></li>
+				 			';
+				 		}else{
+				 			$sub_menu2 ='';
+				 			echo '
+								<li class="cate_list"><a class="cate_link" href="'.$_DOMAIN.'categories/'.$value1['url'].'">'.$value1['label'].' '.$sub_menu2.'</a></li>
+				 			';
+				 		}
+				 	}
+				 	echo '<li class="cate_list"><a class="cate_link" href="'.$_DOMAIN.'news/1">TIN TỨC</a></li>';
+				 	echo '<li class="cate_list"><a href="'.$_DOMAIN.'intro/us" class="cate_link">GIỚI THIỆU</a></li>';
+				 	if ($user) {
+				 		if (isset($_GET['sc']) || isset($_GET['in']) || isset($_GET['n'])) {
+							$url_img='../';
+						}else if (isset($_GET['ct'])) {
+							$url_img='../../';
+						}else{
+							$url_img='';
+						}
+				 		echo "</ul>";
+				 		$sql_get_name= "SELECT * from accounts where username='$user'";
+				 		$data_get_name = $db->getRow($sql_get_name);
+				 		$display_name= $data_get_name['display_name'];
+				 		$last_name= explode(" ",$display_name);
+				 		$img_user = $data_get_name['url_avatar'];
+				 		echo '<div  class=" user hide-on-table-and-moblie">
+				 		<img class="img_user" src="'.$url_img.$img_user.'" alt="f" />
+				 		<a style="margin-left:4px;color: white;font-weight : 800;font-size1.2rem" href="'.$_DOMAIN.'admin/" class="">'.end($last_name).'</a></div>';
+
+				 	}else{
+				 	echo '<li class="cate_list"><a href="'.$_DOMAIN.'admin/" class="cate_link btn_modal">Đăng nhập</a></li>';
+				 	echo "</ul>";
+					 }
+				} 
+
+				?>
+			</button>
+			<form autocomplete="off" class="form_input-search " action="<?php echo $_DOMAIN; ?>" method="GET">
+				<div class="input_search">
+					<input id="input-search" type="text" name="search" placeholder="Nhập tên,thể loại cần tìm..."/>
+					<button style="border-radius: unset;" class="btn"><i class="fas fa-search"></i></button>
+					<div class="search_quick hidden" >
+						<ul style="margin: 0;" class="list_search_quick" id="list_popular">
+						</ul>
+					</div>
+				</div>
+			</form>
+			<?php
+			if ($user) {
+				 		if (isset($_GET['sc']) || isset($_GET['in']) || isset($_GET['n'])) {
+							$url_img='../';
+						}else if (isset($_GET['ct'])) {
+							$url_img='../../';
+						}else{
+							$url_img='';
+						}
+				 		$sql_get_name= "SELECT * from accounts where username='$user'";
+				 		$data_get_name = $db->getRow($sql_get_name);
+				 		$display_name= $data_get_name['display_name'];
+				 		$last_name= explode(" ",$display_name);
+				 		$img_user = $data_get_name['url_avatar'];
+				 		echo '<div class="show-on-pc user">
+				 		<img class="img_user" src="'.$url_img.$img_user.'" alt="f" />
+				 		<a style="margin-left:4px;color: white;font-weight : 800;font-size1.2rem" href="'.$_DOMAIN.'admin/" class="">'.end($last_name).'</a>
+				 		</div>
+				 		<i id="btn_sidebar" class="fas fa-bars show-on-pc "></i>
+				 		';
+				 	}else{
+				 		echo '<a  class="cate_list show-on-pc btn_modal" href="'.$_DOMAIN.'admin/" class="cate_link ">Đăng nhập</a>
+						<i id="btn_sidebar" class="fas fa-bars show-on-pc"></i>
+				 		';
+					 } 
+			 ?>
+			
+		</div>
+	</div>
+	</div>
+	<div class="gird wide header_pin">
+	<div class="row space">
+		

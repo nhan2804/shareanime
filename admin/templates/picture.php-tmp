@@ -1,0 +1,103 @@
+<?php
+if ($user) {
+	echo "<h3>Hình ảnh</h3>";
+	if (isset($_GET['ac'])) {
+		$ac = trim(addslashes(htmlspecialchars($_GET['ac'])));
+	} else {
+		$ac = '';
+	}
+	if ($ac != '') {
+		if ($ac == 'add') {
+			echo '
+			<a href="'.$_DOMAIN.'picture" class="btn btn-default">
+				<span class="glyphicon glyphicon-arrow-left"></span>Trở về
+			</a>
+			';
+			echo '
+			<div class="alert alert-info">Mỗi lần upload tối đa 20 file ảnh. Mỗi file có dung lượng không vượt quá 5MB và có đuôi định dạng là .jpg, .png.gif., </div>
+			<form method="POST" action="'.$_DOMAIN.'picture.php" id="formUPimg" enctype="multpart/form-data">
+				<div class="form-group">
+					<label>Chọn hình ảnh</label>
+					<input type="file" class="form-control" id="img_up" name="img_up[]" accept="image/*" multiple="true" onchange="imgpre()">
+				</div>
+				<div class="form-group hidden box-pre-img">
+					<p><strong>Ảnh xem trước</strong></p>
+				</div>
+				<div class="form-group hidden box-progress-bar">
+					<div class="progress">
+						<div class="progress-bar"></div>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary">Upload</button>
+					<button id="reset" class="btn btn-dark" type="reset">Chọn lại</button>
+				</div>
+				<div class="alert alert-danger hidden"></div>
+			</form>';
+		}
+	} else {
+		echo '
+            <a href="'.$_DOMAIN.'picture/add" class="btn btn-success">
+                <span class="glyphicon glyphicon-plus"></span> Thêm
+            </a>
+            <a href="'.$_DOMAIN.'picture" class="btn btn-default">
+                <span class="glyphicon glyphicon-repeat"></span> Reload
+            </a>
+            <a class="btn btn-danger" id="del_img_list">
+                <span class="glyphicon glyphicon-trash"></span> Xoá
+            </a> ';
+		$sql_get_img = "SELECT * FROM images ORDER BY id_img DESC";
+		if ($db->numrow($sql_get_img)) {
+			echo '
+            	<div class="row list" id="list_pic">
+            		<div class="col-md-12">
+            			<div class="checkbox"><label><input type="checkbox" name="">Bỏ/Chọn tất cả</label></div>
+            		</div>
+            	';
+			foreach ($db->getData($sql_get_img) as $key => $value) {
+				if (file_exists('../'.$value['url'])) {
+					$status_img = '<label class="label label-success">Tồn tại</label>';
+				} else {
+					$status_img = '<label class="label label-success">Lỗi</label>';
+				}
+				if ($value['size'] < 1024) {
+					$size = $value['size'].'Byte';
+				} else if ($value['size'] < 1048576) {
+					$size = round($value['size']/1024).'Kb';
+				} else if ($value['size'] > 1048576) {
+					$size = round($value['size']/1024/1024).'Mb';
+				}
+				echo '
+            		<div class="col-md-3">
+            			<div class="thumbnail">
+            				<a href="'.str_replace('admin/', '', $_DOMAIN).$value['url'].'">
+            					<img src="'.str_replace('admin', '', $_DOMAIN).$value['url'].'" alt="'.$value['date_uploaded'].'"  style="height:150px" />
+            				</a>
+            				<div class="caption">
+            					<div class="input-group">
+            						<span class="input-group-addon">
+            							<input type="checkbox" name="id_img[]" value="'.$value['id_img'].'">
+            						</span>
+            						<input class="form-control" type="text" name="" value="'.$value['url'].'" />
+            						<span class="input-group-btn">
+            							<button class="btn btn-danger del-img" data_id="'.$value['id_img'].'">
+            								<i class="glyphicon glyphicon-trash"></i>
+            							</button>
+            						</span>
+            					</div>
+            					<p>Trạng thái:'.$status_img.'</p>
+		                        <p>Dung lượng:'.$size.' </p>
+		                        <p>Định dạng: '.$value['type'].'</p>
+            				</div>
+            			</div>
+            		</div>';
+			}
+			echo '</div>';
+		} else {
+			echo '<div class="alert alert-info">Hiện tại không có ảnh nào</div>';
+		}
+	}
+} else {
+	new redirect($_DOMAIN);
+}
+?>
